@@ -1,0 +1,51 @@
+{% load static %}
+<html>
+
+<head>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-144351462-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'UA-144351462-1');
+  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Shop</title>
+  {% block styles %}
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+  <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script>
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Courgette&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/styles.css' %}" type="text/css">
+  {% endblock %}
+  <link rel="icon"
+    href="https://st.depositphotos.com/1062085/3876/v/950/depositphotos_38761039-stock-illustration-small-shop-on-the-street.jpg"
+    width="30" height="30" class="d-inline-block align-top">
+</head>
+
+<body>
+  <div>
+    {% block title %}
+    {% endblock %}
+    {% include "navbar.html" %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% include "footer.html" %}
+
+    {% block scripts %}
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+    <script src="{% static 'script.js'%}"></script>
+    {% endblock %}
+  </div>
+</body>
+
+</html>

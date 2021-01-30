@@ -1,0 +1,43 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-white">
+    <a class="navbar-brand" href="/">
+        <img src="https://st.depositphotos.com/1062085/3876/v/950/depositphotos_38761039-stock-illustration-small-shop-on-the-street.jpg" width="30"
+            height="30" class="d-inline-block align-top" alt=""></a>
+    <button class="navbar-toggler bg-dark" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav mr-auto">
+            {% if user.is_authenticated %}
+            <li class="nav-item active">
+                <a class="nav-link " href="/logout" style="color: black; font-weight: bold;">Logout&nbsp;<i class="fas fa-sign-in-alt"></i> <span
+                        class="sr-only">(current)</span></a>
+            </li>
+            {% else %}
+            <li class="nav-item active">
+                <a class="nav-link " href="/login" style="color: black; font-weight: bold;">Login&nbsp;<i class="fas fa-sign-in-alt"></i> <span
+                        class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item active">
+                <a class="nav-link " href="/signup" style="color: black; font-weight: bold;">SignUp&nbsp;<i class="fas fa-user-plus"></i> <span
+                        class="sr-only">(current)</span></a>
+            </li>
+            {% endif %}
+        </ul>
+        <form class="form-inline my-2 my-lg-0" action="/search" role="search"">
+          <input class=" form-control mr-sm-2" type="search" name="searchimage" placeholder="Search by Category"
+            aria-label="Search" style="border: 0px; border-bottom: 2px solid black; outline: none;">
+            <button class="btn my-2 my-sm-0 btn-outline-dark" type="submit" style="border-radius: 20px"><i
+                    class="fas fa-search"></i></button> &nbsp;
+        </form>
+        <a class="navbar-brand" href="#">
+            <img src="https://www.freevector.com/uploads/vector/preview/8974/FreeVector-Vector-Shopping-Cart.jpg" width="40"
+                height="30" class="d-inline-block align-top" alt=""></a>
+    </div>
+</nav>
+<h1 class="text-center" style="font-family: 'Great Vibes', cursive;">Online Shop</h1><br>
+<div class="text-center">
+
+    <a class="mr-1 badge badge-info" href="#" style="margin:8px">#kigali</a>
+</div>
