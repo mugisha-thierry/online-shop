@@ -19,3 +19,8 @@ class CommentForm(forms.ModelForm):
     class Meta:
         model = Comment
         exclude = ['user', 'post']                  
+
+class UpdateUserProfileForm(forms.ModelForm):
+    class Meta:
+        model = Profile
+        exclude = ['user']        
