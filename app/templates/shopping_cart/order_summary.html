@@ -1,0 +1,83 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% block content %}
+<h1>Mugisha</h1>
+{% if messages %}
+<ul class="messages">
+  {% for message in messages %}
+  <li{% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+<div class="container">
+  <div class="row">
+    <div class="col-md-1"></div>
+    <div class="col-md-10">
+      <section>
+        <div class="row">
+          <table class="table table-hover table-bordered text-center">
+            <tr class="text-center">
+              <th>no.</th>
+              <th>Item</th>
+              <th>Price</th>
+            </tr>
+            {% for item in order.get_cart_items %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>
+                {{ item.product.name }}
+                <span class="pull-right">
+                  <a href="{% url 'delete_item' item.id %}" data-balloon="remove this item from cart"
+                    class="text-danger" onclick="return confirm_delete();">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                </span>
+              </td>
+              <td>{{ item.product.price }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan=3> You have not added any items yet.</td>
+            </tr>
+            {% endfor %}
+            <tr>
+              {% if order.get_cart_total != None %}
+              <td colspan=2>
+                <strong class="pull-right">Order Total:</strong>
+              </td>
+
+              <td colspan=1>
+                $<strong>{{ order.get_cart_total }}</strong>
+              </td>
+              {% endif %}
+            </tr>
+            <tr>
+              <td colspan=1>
+                <a href="{% url 'product_list' %}" class="btn btn-warning pull-left">
+                  {% if order %}Continue Shopping{% else %}Add Items to Cart {% endif %}
+                </a>
+              </td>
+              <td colspan=2>
+                {% if order.get_cart_items %}
+                <a href="{% url 'checkout' %}" class="pull-right btn btn-primary">Proceed To Checkout</a>
+                {% endif %}
+              </td>
+            </tr>
+          </table>
+
+        </div>
+      </section>
+    </div>
+    <div class="col-md-1"></div>
+  </div>
+</div>
+{% block scripts %}
+{{ block.super }}
+<script>
+  function confirm_delete() {
+    return confirm("Do you want to remove this item from cart?");
+  }
+</script>
+{% endblock scripts %}
+{% endblock %}
