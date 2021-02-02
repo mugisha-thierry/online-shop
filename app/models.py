@@ -16,15 +16,16 @@ class Profile(models.Model):
     phone = PhoneField(blank=True, help_text='Contact phone number')
     my_location  = models.CharField(max_length=128)
     profile_pic = models.ImageField(upload_to='profile/', default='a.png')
+    ebooks = models.ManyToManyField('Product', blank=True)
     
+    def __str__(self):
+        return self.user.username
 
     @classmethod
     def search_by_profile(cls, username):
         certain_user = cls.objects.filter(user__username__icontains = username)
         return certain_user
 
-    def __str__(self):
-        return self.user.username
 
     @receiver(post_save, sender=User)
     def update_user_profile(sender, instance, created, **kwargs):
@@ -45,7 +46,12 @@ class Profile(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length =30)
     def __str__(self):
-        return self.name    
+        return self.name 
+
+    @classmethod
+    def get_category(cls):
+        categorys = Category.objects.all()
+        return categorys       
 
     def save_category(self):
         self.save()
@@ -57,11 +63,10 @@ class Product(models.Model):
     name = models.CharField(max_length=250, blank=True)
     product_pic = models.ImageField(upload_to='products/')
     description = models.TextField(max_length=255)
-    ammount = models.IntegerField(default=0, blank=True)
-    discount = models.IntegerField(default=0, blank=True)
+    price = models.IntegerField()
     date = models.DateTimeField(auto_now_add=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
-    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='productss')
+    # user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='productss')
 
     class Meta:
         ordering = ["-pk"]
@@ -95,32 +100,76 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def filter_by_category(cls, category):
+        product = Product.objects.filter(category__name=category).all()
+        return product    
+class OrderItem(models.Model):
+    product = models.OneToOneField(Product, on_delete=models.SET_NULL, null=True)
+    is_ordered = models.BooleanField(default=False)
+    date_added = models.DateTimeField(auto_now=True)
+    date_ordered = models.DateTimeField(null=True)
 
-class Rate(models.Model):
-    rating = (
-        (1, '1'),
-        (2, '2'),
-        (3, '3'),
-        (4, '4'),
-        (5, '5'),
-        (6, '6'),
-        (7, '7'),
-        (8, '8'),
-        (9, '9'),
-        (10, '10'),
-    )
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='project', null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='rate')
-    design = models.IntegerField(choices=rating, default=0, blank=True)
-    usability = models.IntegerField(choices=rating,default=0, blank=True)
-    content = models.IntegerField(choices=rating,default=0, blank=True)
-    date = models.DateTimeField(auto_now_add=True, blank=True)
+    def __str__(self):
+        return self.product.name
 
-    def save_rate(self):
-        self.save()
+
+class Order(models.Model):
+    ref_code = models.CharField(max_length=15)
+    owner = models.ForeignKey(Profile, on_delete=models.SET_NULL, null=True)
+    is_ordered = models.BooleanField(default=False)
+    items = models.ManyToManyField(OrderItem)
+    date_ordered = models.DateTimeField(auto_now=True)
+
+    def get_cart_items(self):
+        return self.items.all()
+
+    def get_cart_total(self):
+        return sum([item.product.price for item in self.items.all()])
+
+    def __str__(self):
+        return '{0} - {1}'.format(self.owner, self.ref_code)
+
+
+class Transaction(models.Model):
+    profile = models.ForeignKey(Profile, on_delete=models.CASCADE)
+    token = models.CharField(max_length=120)
+    order_id = models.CharField(max_length=120)
+    amount = models.DecimalField(max_digits=100, decimal_places=2)
+    success = models.BooleanField(default=True)
+    timestamp = models.DateTimeField(auto_now_add=True, auto_now=False)
+
+    def __str__(self):
+        return self.order_id
 
     class Meta:
-        ordering = ["-pk"]                         
+        ordering = ['-timestamp']
+
+# class Rate(models.Model):
+#     rating = (
+#         (1, '1'),
+#         (2, '2'),
+#         (3, '3'),
+#         (4, '4'),
+#         (5, '5'),
+#         (6, '6'),
+#         (7, '7'),
+#         (8, '8'),
+#         (9, '9'),
+#         (10, '10'),
+#     )
+#     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='project', null=True)
+#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='rate')
+#     design = models.IntegerField(choices=rating, default=0, blank=True)
+#     usability = models.IntegerField(choices=rating,default=0, blank=True)
+#     content = models.IntegerField(choices=rating,default=0, blank=True)
+#     date = models.DateTimeField(auto_now_add=True, blank=True)
+
+#     def save_rate(self):
+#         self.save()
+
+#     class Meta:
+#         ordering = ["-pk"]                         
 
 class Comment(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='posting', null=True)
