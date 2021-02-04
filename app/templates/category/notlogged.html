@@ -15,7 +15,7 @@
         object-fit: cover;
     }
 </style>
-<h1 class="text-center" style="font-family: 'Great Vibes', cursive; margin-bottom: -9.8px; margin-top: 54.5px; color: red;">Online Shop</h1>
+<h1 class="text-center" style="font-family: 'Great Vibes', cursive; margin-bottom: -9.8px; margin-top: 54.5px; color: red;">Open Limits</h1>
 <div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
     <ol class="carousel-indicators">
         <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
@@ -104,7 +104,7 @@
         {% for object in object_list %}
   
       <div class="card col-md-3 m-3">
-        <img class="card-img-top" data-toggle="modal" data-target="#{{object.id}}" width="100%" src="{{object.product_pic.url}}" alt="-------">
+        <a href="{% url 'comment' object.pk %}"><img class="card-img-top" width="100%" src="{{object.product_pic.url}}" alt="-------"></a>
         
         <div class="card-body">
           <h5 class="card-title"><span>{{ object.name }}</span></h5>
