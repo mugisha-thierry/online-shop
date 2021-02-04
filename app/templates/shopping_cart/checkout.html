@@ -14,8 +14,11 @@
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
 
     }
+
+    body {
+        padding-top: 70px;
+    }
 </style>
-<h1>Mugisha</h1>
 
 <body>
     <div class="container">
@@ -25,19 +28,13 @@
                     <div class="panel panel-primary">
 
                         <div class="panel-body">
-                            <h5>Enter Voucher Code Below<br><small>If multiple, separate each with comma</small></h5>
+                            <h5 style="font-weight: bold;">Deliver Address<br><small></small></h5>
 
                             <div>
-                                <form action="." method="post">
+                                <form action="" method="post" enctype="multipart/form-data">
                                     {% csrf_token %}
-                                    <input type="text" name="voucher_codes" class="form-control" id="voucher_code"
-                                        required>
-                                    <input type="hidden" name="order_id" value="{{ order.id }}">
-                                    <br>
-                                    <span>
-                                        <a href="#" class="btn btn-warning pull-right">Apply Voucher</a>
-
-                                    </span>
+                                    {{ form|crispy }}
+                                    <input type="submit" class="btn btn-warning btn-lg btn-block" value="Checkout" />
                                 </form>
                             </div>
                         </div>
@@ -65,7 +62,6 @@
                             <td> <strong>${{ order.get_cart_total }}</strong></td>
                         </tr>
                     </table>
-                    <button class="btn btn-warning" style="width: 100%;">Checkout with a credit card</button>
                 </div>
             </div>
         </section>
