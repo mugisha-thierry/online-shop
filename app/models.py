@@ -6,6 +6,8 @@ from django.dispatch import receiver
 from tinymce.models import HTMLField
 import datetime as dt
 from django.db.models import Q
+import numpy as np
+from creditcards.models import CardNumberField, CardExpiryField, SecurityCodeField
 
 # Create your models here.
 
@@ -16,7 +18,6 @@ class Profile(models.Model):
     phone = PhoneField(blank=True, help_text='Contact phone number')
     my_location  = models.CharField(max_length=128)
     profile_pic = models.ImageField(upload_to='profile/', default='a.png')
-    ebooks = models.ManyToManyField('Product', blank=True)
     
     def __str__(self):
         return self.user.username
@@ -72,13 +73,13 @@ class Product(models.Model):
         ordering = ["-pk"]
 
     def avg_design(self):
-        design_rates = list(map(lambda x: x.design, self.project.all()))
+        design_rates = list(map(lambda x: x.test, self.project.all()))
         return np.mean(design_rates)
     def avg_content(self):
-        content_rates = list(map(lambda x: x.content, self.project.all()))
+        content_rates = list(map(lambda x: x.price, self.project.all()))
         return np.mean(content_rates)
     def avg_usability(self):
-        usability_rates = list(map(lambda x: x.usability, self.project.all()))
+        usability_rates = list(map(lambda x: x.durability, self.project.all()))
         return np.mean(usability_rates)    
 
     def save_product(self):
@@ -124,6 +125,9 @@ class Order(models.Model):
     def get_cart_items(self):
         return self.items.all()
 
+    def delete_cat(self):
+        self.delete()    
+
     def get_cart_total(self):
         return sum([item.product.price for item in self.items.all()])
 
@@ -145,40 +149,59 @@ class Transaction(models.Model):
     class Meta:
         ordering = ['-timestamp']
 
-# class Rate(models.Model):
-#     rating = (
-#         (1, '1'),
-#         (2, '2'),
-#         (3, '3'),
-#         (4, '4'),
-#         (5, '5'),
-#         (6, '6'),
-#         (7, '7'),
-#         (8, '8'),
-#         (9, '9'),
-#         (10, '10'),
-#     )
-#     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='project', null=True)
-#     user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='rate')
-#     design = models.IntegerField(choices=rating, default=0, blank=True)
-#     usability = models.IntegerField(choices=rating,default=0, blank=True)
-#     content = models.IntegerField(choices=rating,default=0, blank=True)
-#     date = models.DateTimeField(auto_now_add=True, blank=True)
-
-#     def save_rate(self):
-#         self.save()
-
-#     class Meta:
-#         ordering = ["-pk"]                         
 
 class Comment(models.Model):
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='posting', null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='commenting')
-    commenting = models.TextField(max_length=500, blank=True, default='No comments')
+    comment = models.TextField()
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(Profile, on_delete=models.CASCADE, related_name='comments')
+    created = models.DateTimeField(auto_now_add=True, null=True)
+
+    def __str__(self):
+        return self.comment
+
+    class Meta:
+        ordering = ["-pk"]        
+
+
+class Rate(models.Model):
+    rating = (
+        (1, '1'),
+        (2, '2'),
+        (3, '3'),
+        (4, '4'),
+        (5, '5'),
+        (6, '6'),
+        (7, '7'),
+        (8, '8'),
+        (9, '9'),
+        (10, '10'),
+    )
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='project', null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='rate')
+    test = models.IntegerField(choices=rating, default=0, blank=True)
+    price = models.IntegerField(choices=rating,default=0, blank=True)
+    durability = models.IntegerField(choices=rating,default=0, blank=True)
     date = models.DateTimeField(auto_now_add=True, blank=True)
 
-    def save_comment(self):
+    def save_rate(self):
         self.save()
 
     class Meta:
-        ordering = ["-pk"]       
+        ordering = ["-pk"]                         
+
+
+class Delivery(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, related_name='deliver')
+    location  = models.CharField(max_length=128)
+    phone = PhoneField(blank=True, help_text='Contact phone number')
+    cc_number = CardNumberField('card number')
+    cc_expiry = CardExpiryField('expiration date')
+    cc_code = SecurityCodeField('security code')
+
+    def save_deliver(self):
+        self.save()
+
+    class Meta:
+        ordering = ["-pk"]                         
+
+
