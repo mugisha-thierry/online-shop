@@ -3,21 +3,31 @@
 {% load crispy_forms_tags %}
 {% block content %}
 
-
+<style>
+    .brand_logo {
+        height: 150px;
+        width: 150px;
+        border-radius: 50%;
+        border: 2px solid white;
+    }
+</style>
 <div class="card-group">
     <div class="col-md-4">
     </div>
     <div class="col-md-4">
         <hr>
-        <div class="text-center">
-            <h1 style="color: blue;">Sign Up</h1>
+        <div class="d-flex justify-content-center">
+            <div class="brand_logo_container">
+                <img src="https://images-na.ssl-images-amazon.com/images/I/31dZEtR+s-L._SX258_BO1,204,203,200_.jpg"
+                    class="brand_logo" alt="Logo">
+            </div>
         </div>
         <div class="card-body">
             <div class="card-text">
                 <form action="" method="post" class="form-group">
                     {% csrf_token %}
                     {{form|crispy}}
-                    <button type="submit" class="btn btn-outline-primary">Register</button>
+                    <button type="submit" class="btn btn-dark btn-lg btn-block">Register</button>
                 </form>
             </div>
         </div>
