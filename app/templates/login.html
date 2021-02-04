@@ -102,12 +102,20 @@
 <!--Coded with love by Mutiullah Samim-->
 
 <body>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }} p-3 mb-2 bg-success text-white" {% endif %}>{{ message }}
+            </li>
+            {% endfor %}
+    </ul>
+    {% endif %}
     <div class="container h-100">
         <div class="d-flex justify-content-center h-100">
             <div class="user_card">
                 <div class="d-flex justify-content-center">
                     <div class="brand_logo_container">
-                        <img src="https://cdn.freebiesupply.com/logos/large/2x/pinterest-circle-logo-png-transparent.png"
+                        <img src="https://images-na.ssl-images-amazon.com/images/I/31dZEtR+s-L._SX258_BO1,204,203,200_.jpg"
                             class="brand_logo" alt="Logo">
                     </div>
                 </div>
@@ -115,7 +123,7 @@
                     <form action="" method="post">
                         {% csrf_token %}
                         {% bootstrap_form form%}
-                        <input type="submit" class="btn btn-primary btn-lg btn-block" value="Log in">
+                        <input type="submit" class="btn btn-dark btn-lg btn-block" value="Log in">
                         <input type="hidden" name="next" value="{{next}}">
                     </form>
                 </div>
