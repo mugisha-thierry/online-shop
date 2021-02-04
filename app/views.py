@@ -3,14 +3,14 @@ from django.contrib.auth.models import Group
 from django.shortcuts import render,redirect,get_object_or_404
 from django.http import HttpResponse, Http404,HttpResponseRedirect
 from django.contrib.auth.forms import UserCreationForm
-from .models import Profile,OrderItem, Order, Transaction,Product, Category
+from .models import Profile,OrderItem, Order, Transaction,Product, Category, Comment, Rate,Delivery
 from django.contrib.auth import login, authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth.models import User
 from django.urls import reverse
-from .forms import SignUpForm, UpdateUserProfileForm,CommentForm
+from .forms import SignUpForm, UpdateUserProfileForm,CommentForm,RateForm,DeliveryForm
 from .decorators import admin_only,allowed_users
 from django.contrib import messages
 
@@ -24,13 +24,92 @@ def home(request):
     categorys = Category.get_category()
     return render(request, 'home.html',{'object_list':object_list,'categorys':categorys})
 
+def search_product(request):
+    categorys = Category.get_category()
+    if 'searchproject' in request.GET and request.GET["searchproject"]:
+        search_term = request.GET.get("searchproject")
+        searched_project = Product.search_by_name(search_term)
+        message = f"{search_term}"
+        context = {'object_list':searched_project,'message': message,'categorys':categorys}
+
+        return render(request, "search.html",context)
+    else:
+      message = "You haven't searched for any term"
+      return render(request, 'search.html',{"message":message})     
+
+
+def search_products(request):
+    categorys = Category.get_category()
+    filtered_orders = Order.objects.filter(owner=request.user.profile, is_ordered=False)
+    current_order_products = []
+    if filtered_orders.exists():
+    	user_order = filtered_orders[0]
+    	user_order_items = user_order.items.all()
+    	current_order_products = [product.product for product in user_order_items]
+
+    if 'searchproduct' in request.GET and request.GET["searchproduct"]:
+        search_term = request.GET.get("searchproduct")
+        searched_project = Product.search_by_name(search_term)
+        message = f"{search_term}"
+        context = {'object_list':searched_project,'message': message,'categorys':categorys,'current_order_products': current_order_products,}
+
+        return render(request, "searching.html",context)
+    else:
+      message = "You haven't searched for any term"
+      return render(request, 'searching.html',{"message":message})       
+
 def product_category(request, category):
     object_list = Product.filter_by_category(category)
     categorys = Category.get_category()
     context = {'object_list':object_list,'categorys': categorys}
     return render(request,'category/notlogged.html',context)
+
+# @login_required(login_url='login')
+def comment(request, pk):
+    image = get_object_or_404(Product, pk=pk)
+
+    product = Product.objects.get(id = pk)
+    rates = Rate.objects.order_by('-date')
+    current_user = request.user
+    if request.method == 'POST':
+        form = CommentForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.product = image
+            comment.user = request.user.profile
+            comment.save()
+            return HttpResponseRedirect(request.path_info)
+    else:
+        form = CommentForm()
+
+    if request.method == 'POST':
+        form_rate = RateForm(request.POST)
+        if form_rate.is_valid():
+            test = form_rate.cleaned_data['test']
+            price = form_rate.cleaned_data['price']
+            durability = form_rate.cleaned_data['durability']
+            rate = Rate()
+            rate.product = image
+            rate.user = current_user
+            rate.test = test
+            rate.price = price
+            rate.durability = durability
+            rate.average = (rate.test + rate.price + rate.durability)/3
+            rate.save()
+            return HttpResponseRedirect(request.path_info)
+    else:
+        form_rate = RateForm()    
+    context = {
+        'image': image,
+        'form': form,
+        'form_rate':form_rate,
+        'rates':rates,
+        'product':product,
+    }
+
+    return render(request, 'product.html', context)
+
     
-       
 
 def signup(request):
     if request.method == 'POST':
@@ -39,7 +118,8 @@ def signup(request):
             user = form.save()
             group = Group.objects.get(name = 'customer')
             user.groups.add(group)
-            return redirect("/")
+            messages.info(request, "Your account has been Created successfully.")
+            return redirect("/login")
     else:
         form = SignUpForm()
     return render(request, 'register/register.html', {'form': form}) 
@@ -120,7 +200,7 @@ def add_to_cart(request, **kwargs):
     user_order.items.add(order_item)
     if status:
         # generate a reference code
-        user_order.ref_code = generate_order_id()
+        user_order.ref_code = 221
         user_order.save()
 
     # show confirmation message and redirect back to the same page
@@ -149,97 +229,45 @@ def order_details(request, **kwargs):
 @login_required(login_url='login')
 def checkout(request, **kwargs):
     client_token = 222
+    current_user = request.user
     existing_order = get_user_pending_order(request)
     publishKey = 111
     if request.method == 'POST':
-        token = request.POST.get('stripeToken', False)
-        if token:
-            try:
-                charge = stripe.Charge.create(
-                    amount=100*existing_order.get_cart_total(),
-                    currency='usd',
-                    description='Example charge',
-                    source=token,
-                )
-
-                return redirect(reverse('shopping_cart:update_records',
-                        kwargs={
-                            'token': token
-                        })
-                    )
-            except stripe.CardError as e:
-                message.info(request, "Your card has been declined.")
-        else:
-            result = transact({
-                'amount': existing_order.get_cart_total(),
-                'payment_method_nonce': request.POST['payment_method_nonce'],
-                'options': {
-                    "submit_for_settlement": True
-                }
-            })
-
-            if result.is_success or result.transaction:
-                return redirect(reverse('shopping_cart:update_records',
-                        kwargs={
-                            'token': result.transaction.id
-                        })
-                    )
-            else:
-                for x in result.errors.deep_errors:
-                    messages.info(request, x)
-                return redirect(reverse('shopping_cart:checkout'))
+        form = DeliveryForm(request.POST)
+        if form.is_valid():
+            comment = form.save(commit=False)
+            comment.user = current_user
+            comment.save()
+            clear_from_cart(request)
+            return redirect('product_list')
+    else:
+        form = DeliveryForm()
             
     context = {
         'order': existing_order,
         'client_token': client_token,
-        'STRIPE_PUBLISHABLE_KEY': publishKey
+        'form':form,
     }
 
     return render(request, 'shopping_cart/checkout.html', context)
 
 
+
+
+
+
+
+
 @login_required(login_url='login')
-def update_transaction_records(request, token):
-    # get the order being processed
-    order_to_purchase = get_user_pending_order(request)
+def clear_from_cart(request):
+    current_user = request.user
+    cat = get_object_or_404(Order, owner=current_user.id)
+    cat.delete()
+    messages.info(request, "Thanks for shopping with us")
+    return redirect('product_list')     
 
-    # update the placed order
-    order_to_purchase.is_ordered=True
-    order_to_purchase.date_ordered=datetime.datetime.now()
-    order_to_purchase.save()
-    
-    # get all items in the order - generates a queryset
-    order_items = order_to_purchase.items.all()
+def admin_page(request):
+    return render(request,'admin_page.html')
 
-    # update order items
-    order_items.update(is_ordered=True, date_ordered=datetime.datetime.now())
-
-    # Add products to user profile
-    user_profile = get_object_or_404(Profile, user=request.user)
-    # get the products from the items
-    order_products = [item.product for item in order_items]
-    user_profile.ebooks.add(*order_products)
-    user_profile.save()
-
-    
-    # create a transaction
-    transaction = Transaction(profile=request.user.profile,
-                            token=token,
-                            order_id=order_to_purchase.id,
-                            amount=order_to_purchase.get_cart_total(),
-                            success=True)
-    # save the transcation (otherwise doesn't exist)
-    transaction.save()
-
-
-    # send an email to the customer
-    # look at tutorial on how to send emails with sendgrid
-    messages.info(request, "Thank you! Your purchase was successful!")
-    return redirect(reverse('accounts:my_profile'))
-
-
-def success(request, **kwargs):
-    # a view signifying the transcation was successful
-    return render(request, 'shopping_cart/purchase_success.html', {})
-
-
+def about(request):
+    return render(request,'about.html')
