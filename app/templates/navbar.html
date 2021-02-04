@@ -1,4 +1,4 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-white fixed-top">
+<nav class="navbar navbar-expand-lg navbar-dark bg-light fixed-top">
     {% if user.is_authenticated %}
     <a class="navbar-brand" href="{% url 'product_list' %}">
         <img src="https://st.depositphotos.com/1062085/3876/v/950/depositphotos_38761039-stock-illustration-small-shop-on-the-street.jpg" width="30"
@@ -24,6 +24,10 @@
                 <a class="nav-link " href="/logout" style="color: black; font-weight: bold;">Logout&nbsp;<i class="fas fa-sign-in-alt"></i> <span
                         class="sr-only">(current)</span></a>
             </li>
+            <li class="nav-item active">
+                <a class="nav-link " href="/about" style="color: black; font-weight: bold;">About Us<span
+                        class="sr-only">(current)</span></a>
+            </li>
             {% else %}
             <li class="nav-item active">
                 <a class="nav-link " href="/login" style="color: black; font-weight: bold;">Login&nbsp;<i class="fas fa-sign-in-alt"></i> <span
@@ -33,17 +37,28 @@
                 <a class="nav-link " href="/signup" style="color: black; font-weight: bold;">SignUp&nbsp;<i class="fas fa-user-plus"></i> <span
                         class="sr-only">(current)</span></a>
             </li>
+            <li class="nav-item active">
+                <a class="nav-link " href="/about" style="color: black; font-weight: bold;">About Us<span
+                        class="sr-only">(current)</span></a>
+            </li>
             {% endif %}
         </ul>
         {% if user.is_authenticated %}
         <a href="{% url 'profile' user.username  %}" ><img class="rounded-circle border mx-auto" src="{{user.profile.profile_pic.url}}" width="30" height="30" alt=""></a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-        {% endif %}
+        <form class="form-inline my-2 my-lg-0" action="/searching" role="search"">
+            <input class=" form-control mr-sm-2 bg-light" type="search" name="searchproduct" placeholder="Search for Product"
+              aria-label="Search" style="border: 0px; border-bottom: 2px solid black; outline: none;">
+              <button class="btn my-2 my-sm-0 btn-outline-dark" type="submit" style="border-radius: 20px"><i
+                      class="fas fa-search"></i></button> &nbsp;
+          </form>
+        {% else %}
         <form class="form-inline my-2 my-lg-0" action="/search" role="search"">
-          <input class=" form-control mr-sm-2" type="search" name="searchimage" placeholder="Search by Category"
+          <input class=" form-control mr-sm-2 bg-light" type="search" name="searchproject" placeholder="Search for Product"
             aria-label="Search" style="border: 0px; border-bottom: 2px solid black; outline: none;">
             <button class="btn my-2 my-sm-0 btn-outline-dark" type="submit" style="border-radius: 20px"><i
                     class="fas fa-search"></i></button> &nbsp;
         </form>
+        {% endif %}
         <a class="navbar-brand" href="{% url 'order_summary' %}">
             <img src="https://www.freevector.com/uploads/vector/preview/8974/FreeVector-Vector-Shopping-Cart.jpg" width="40"
                 height="30" class="d-inline-block align-top" alt=""></a>
